@@ -6,6 +6,19 @@ const el = (tag, attrs = {}, html = '') => { const n = document.createElement(ta
 const nf = (n, d = 0) => { const [i, f] = Math.abs(n).toFixed(d).split('.'); return (n < 0 ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : ''); };
 const eur = n => nf(Math.round(n)) + ' €';
 
+/* ───── Dimensione del testo (A− / A+) ───── */
+const SCALES = [0.9, 1, 1.12, 1.25, 1.4];
+let si = 1;
+try { const v = +localStorage.getItem('fp-scale'); if (SCALES.includes(v)) si = SCALES.indexOf(v); } catch (e) {}
+function setScale() {
+  document.documentElement.style.setProperty('--scale', SCALES[si]);
+  $('#font-down').disabled = si === 0; $('#font-up').disabled = si === SCALES.length - 1;
+  try { localStorage.setItem('fp-scale', SCALES[si]); } catch (e) {}
+}
+$('#font-down').addEventListener('click', () => { si = Math.max(0, si - 1); setScale(); });
+$('#font-up').addEventListener('click', () => { si = Math.min(SCALES.length - 1, si + 1); setScale(); });
+setScale();
+
 /* ───── 01 · Sostanze ───── */
 const SOSTANZE = [
   { s: 'Nic', n: 'Nicotina', e: 'Crea dipendenza: arriva al cervello in circa 10 secondi. Alza frequenza cardiaca e pressione.', w: 'Negli insetticidi (oggi vietati in UE proprio per la tossicità)' },
@@ -26,9 +39,12 @@ SOSTANZE.forEach(x => {
       <div class="face face-f"><span class="sym">${x.s}</span><h3>${x.n}</h3><p>${x.e}</p><span class="q">Dove altro la trovi? Tocca per scoprirlo ↻</span></div>
       <div class="face face-b"><span class="sym">${x.s}</span><span class="where">La trovi anche…</span><span class="where-v">${x.w}</span></div>
     </div>`);
-  b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')));
+  b.addEventListener('click', () => { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); b.classList.add('seen'); updSost(); });
   grid.append(b);
 });
+function updSost() { $('#sost-count').textContent = `Scoperte: ${grid.querySelectorAll('.seen').length} / ${SOSTANZE.length}`; }
+$('#flip-all').addEventListener('click', () => { grid.querySelectorAll('.flip').forEach(b => { b.setAttribute('aria-pressed', 'true'); b.classList.add('seen'); }); updSost(); });
+$('#flip-reset').addEventListener('click', () => { grid.querySelectorAll('.flip').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.classList.remove('seen'); }); updSost(); });
 
 /* ───── 02 · Corpo ───── */
 const ORGANI = [
@@ -45,8 +61,11 @@ const ORGANI = [
 ];
 const hs = $('#hotspots'), oK = $('#organ-k'), oT = $('#organ-t'), oL = $('#organ-l'), organ = $('#organ');
 const onav = el('div', { class: 'organ-nav' });
-organ.append(onav);
+const ostep = el('div', { class: 'organ-step' }, `<button class="btn btn-secondary" type="button" id="org-prev">‹ Precedente</button><span id="org-n">0 / ${10}</span><button class="btn btn-primary" type="button" id="org-next">Successivo ›</button>`);
+organ.append(ostep, onav);
+let oi = -1;
 function showOrgan(o) {
+  oi = ORGANI.indexOf(o); $('#org-n').textContent = `${oi + 1} / ${ORGANI.length}`;
   oK.textContent = o.k; oT.textContent = o.t;
   oL.innerHTML = o.l.map(t => `<li>${t}</li>`).join('');
   document.querySelectorAll('[data-organ]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.organ === o.id)));
@@ -60,6 +79,9 @@ ORGANI.forEach((o, i) => {
   onav.append(c);
 });
 
+$('#org-prev').addEventListener('click', () => showOrgan(ORGANI[(oi - 1 + ORGANI.length) % ORGANI.length]));
+$('#org-next').addEventListener('click', () => showOrgan(ORGANI[(oi + 1) % ORGANI.length]));
+
 /* ───── 03 · Sport: carbossiemoglobina ───── */
 const hb = $('#hb-grid'), cig = $('#cig'), cigV = $('#cig-val'), cohb = $('#cohb');
 const cells = Array.from({ length: 100 }, () => hb.appendChild(el('span', { class: 'hb' })));
@@ -72,9 +94,12 @@ function updHb() {
   cohb.textContent = nf(p, 1) + '%';
   const k = Math.round(p);
   order.forEach((idx, j) => cells[idx].classList.toggle('co', j < k));
+  document.querySelectorAll('#cig-chips button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === n)));
   cig.style.background = `linear-gradient(90deg,var(--sano),var(--fumo))`;
 }
-cig.addEventListener('input', updHb); updHb();
+cig.addEventListener('input', updHb);
+document.querySelectorAll('#cig-chips button').forEach(b => b.addEventListener('click', () => { cig.value = b.dataset.v; updHb(); }));
+updHb();
 
 /* ───── 04 · Calcolatore ───── */
 const ci = $('#c-cig'), ca = $('#c-anni'), cp = $('#c-prezzo');
@@ -86,7 +111,8 @@ function durata(min) {
   return nf(giorni / 365, 1) + ' anni';
 }
 function calc() {
-  const c = Math.max(0, +ci.value || 0), a = Math.max(0, +ca.value || 0), p = Math.max(0, +String(cp.value).replace(',', '.') || 0);
+  const c = +ci.value, a = +ca.value, p = +cp.value;
+  $('#c-cig-v').textContent = c; $('#c-anni-v').textContent = a === 1 ? '1 anno' : a + ' anni'; $('#c-prezzo-v').textContent = nf(p, 2) + ' €';
   const tot = c * 365 * a, soldi = tot / 20 * p, anno = c * 365 / 20 * p;
   $('#r-soldi').textContent = eur(soldi);
   $('#r-tot').textContent = nf(tot);
@@ -119,9 +145,23 @@ TL.forEach((s, i) => {
 function updTl() {
   const i = +tl.value, s = TL[i];
   $('#tl-k').textContent = 'Dopo ' + s.k; $('#tl-t').textContent = s.t; $('#tl-d').textContent = s.d;
+  $('#tl-prev').disabled = i === 0; $('#tl-next').disabled = i === TL.length - 1;
+  tl.style.setProperty('--p', (i / 7 * 100) + '%');
   steps.querySelectorAll('button').forEach((b, j) => { b.classList.toggle('done', j < i); j === i ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current'); });
 }
-tl.addEventListener('input', updTl); updTl();
+tl.addEventListener('input', () => { stopPlay(); updTl(); });
+const go = d => { tl.value = Math.min(7, Math.max(0, +tl.value + d)); updTl(); };
+$('#tl-prev').addEventListener('click', () => { stopPlay(); go(-1); });
+$('#tl-next').addEventListener('click', () => { stopPlay(); go(1); });
+let timer = null; const playBtn = $('#tl-play');
+function stopPlay() { clearInterval(timer); timer = null; playBtn.textContent = '▶ Riproduci'; }
+playBtn.addEventListener('click', () => {
+  if (timer) return stopPlay();
+  if (+tl.value === 7) { tl.value = 0; updTl(); }
+  playBtn.textContent = '❚❚ Pausa';
+  timer = setInterval(() => { if (+tl.value >= 7) return stopPlay(); go(1); }, 2800);
+});
+updTl();
 
 /* ───── 06 · Miti ───── */
 const MITI = [
@@ -142,10 +182,15 @@ MITI.forEach(m => {
   c.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     const guess = b.dataset.v === '1', ok = guess === m.v;
     c.classList.remove('ok', 'ko'); c.classList.add('done', ok ? 'ok' : 'ko');
+    c.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    updMyth();
     c.querySelector('.ans').innerHTML = `<span class="verdict">${ok ? 'Esatto!' : 'Non proprio.'} È ${m.v ? 'VERO' : 'FALSO'}.</span> ${m.a}`;
   }));
   myths.append(c);
 });
+function updMyth() { $('#myth-count').textContent = `Risposte esatte: ${myths.querySelectorAll('.ok').length} / ${MITI.length} · date: ${myths.querySelectorAll('.done').length}`; }
+$('#myth-reset').addEventListener('click', () => { myths.querySelectorAll('.myth').forEach(c => { c.classList.remove('done', 'ok', 'ko'); c.querySelector('.ans').innerHTML = ''; c.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false')); }); updMyth(); });
+updMyth();
 
 /* ───── 07 · Quiz ───── */
 const QUIZ = [
@@ -170,7 +215,7 @@ function renderQ() {
   qb.innerHTML = `<div class="q-top"><span>Domanda ${qi + 1} di ${QUIZ.length}</span><span>Punteggio: ${score}</span></div>
     <div class="q-bar"><i style="width:${qi / QUIZ.length * 100}%"></i></div>
     <p class="q-text">${Q.q}</p>
-    <div class="q-opts">${Q.o.map((o, i) => `<button class="q-opt" type="button" data-i="${i}">${o}</button>`).join('')}</div>
+    <div class="q-opts">${Q.o.map((o, i) => `<button class="q-opt" type="button" data-i="${i}"><span class="q-key">${i + 1}</span>${o}</button>`).join('')}</div>
     <div class="q-after"></div>`;
   qb.querySelectorAll('.q-opt').forEach(b => b.addEventListener('click', () => {
     const i = +b.dataset.i, ok = i === Q.c; if (ok) score++;
@@ -182,6 +227,11 @@ function renderQ() {
   }));
 }
 renderQ();
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea') || e.altKey || e.ctrlKey || e.metaKey) return;
+  const r = qb.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+  if (/^[1-4]$/.test(e.key)) { const b = qb.querySelector(`.q-opt[data-i="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); }
+});
 
 /* ───── Numeri animati, nav attiva, comparsa allo scroll ───── */
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;

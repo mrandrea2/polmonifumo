@@ -5,7 +5,9 @@ Ideata e realizzata dal **prof. Andrea Bertelli** — Scienze motorie e sportive
 
 ## Cosa contiene
 
-1. **Modello 3D dei polmoni** (three.js) con cursore "anni di fumo": il tessuto cambia colore, compaiono catrame, enfisema e tumore; vista interna dei bronchi, respirazione animata, export OBJ/GLB.
+1. **Modello 3D dei polmoni** (three.js) con cursore "anni di fumo" e pulsanti ±: il tessuto cambia colore, compaiono catrame, enfisema e tumore (interruttori on/off). Barra comandi sul modello: vista interna, respiro, rotazione, vista frontale/laterale, zoom; export OBJ/GLB.
+
+In alto a destra i pulsanti **A− / A+** ingrandiscono tutto il testo (utile alla LIM); la scelta viene ricordata dal browser.
 2. **Cosa respiri** — carte girevoli sulle sostanze tossiche del fumo.
 3. **Il corpo** — figura interattiva con i danni organo per organo.
 4. **Fumo e sport** — simulazione del monossido di carbonio che blocca l'emoglobina.

@@ -49,6 +49,10 @@
       <a href="#miti">Falsi miti</a>
       <a href="#quiz">Quiz</a>
     </div>
+    <div class="fontctl" role="group" aria-label="Dimensione del testo">
+      <button type="button" id="font-down" aria-label="Riduci il testo">A−</button>
+      <button type="button" id="font-up" aria-label="Ingrandisci il testo">A+</button>
+    </div>
   </nav>
 </header>
 
@@ -59,6 +63,16 @@
   <div class="stage-box">
     <three-d-stage name="polmoni_fumatore" autorotate></three-d-stage>
     <div class="stage-loading" aria-hidden="true">Caricamento del modello 3D…</div>
+    <div class="stage-tools" role="toolbar" aria-label="Comandi del modello 3D">
+      <button class="tool" type="button" id="xray" aria-pressed="false">Vista interna</button>
+      <button class="tool" type="button" id="breath" aria-pressed="true">Respiro</button>
+      <button class="tool" type="button" id="spin" aria-pressed="true">Rotazione</button>
+      <span class="tool-sep" aria-hidden="true"></span>
+      <button class="tool" type="button" id="view-front">Fronte</button>
+      <button class="tool" type="button" id="view-side">Lato</button>
+      <button class="tool tool-icon" type="button" id="zoom-in" aria-label="Avvicina">＋</button>
+      <button class="tool tool-icon" type="button" id="zoom-out" aria-label="Allontana">−</button>
+    </div>
   </div>
   <aside class="panel">
     <div class="row"><span class="tag tag-accent-2">Web app didattica</span><span class="tag tag-neutral">Educazione alla salute</span></div>
@@ -68,8 +82,9 @@
     <div class="sim card">
       <div class="sim-head">
         <label for="anni" class="card-title">Anni di fumo</label>
-        <output id="anni-val" for="anni">30 anni</output>
-      </div>
+        <span class="stepper"><button type="button" class="step" data-target="anni" data-d="-1" aria-label="Un anno in meno">−</button><button type="button" class="step" data-target="anni" data-d="1" aria-label="Un anno in più">＋</button></span>
+        </div>
+      <output id="anni-val" for="anni" class="big-out">30 anni</output>
       <input type="range" id="anni" min="0" max="40" step="1" value="30" class="range" aria-describedby="stato-d">
       <div class="seg" role="radiogroup" aria-label="Esempi rapidi">
         <label class="seg-opt"><input type="radio" name="preset" value="0"> Sano</label>
@@ -84,33 +99,28 @@
     </div>
 
     <div class="layers" id="layers">
-      <div class="card layer" data-layer="catrame">
+      <button type="button" class="card layer" data-layer="catrame" role="switch" aria-checked="true">
         <span class="dot" style="background:#2a201b"></span>
-        <div><div class="card-title">Catrame</div><p>Le particelle del fumo si depositano nel tessuto e lo anneriscono. Le ciglia che puliscono le vie aeree si paralizzano.</p></div>
-        <button class="btn btn-ghost eye" type="button" aria-pressed="true">Nascondi</button>
-      </div>
-      <div class="card layer" data-layer="enfisema">
+        <span class="layer-txt"><span class="card-title">Catrame</span><span class="layer-p">Le particelle del fumo si depositano nel tessuto e lo anneriscono. Le ciglia che puliscono le vie aeree si paralizzano.</span></span>
+        <span class="switch" aria-hidden="true"><i></i></span>
+      </button>
+      <button type="button" class="card layer" data-layer="enfisema" role="switch" aria-checked="true">
         <span class="dot" style="background:#efd9c6"></span>
-        <div><div class="card-title">Enfisema</div><p>Le pareti degli alveoli si rompono e formano bolle d'aria: meno superficie per scambiare ossigeno, più fiato corto.</p><p class="soglia" hidden>Compare dopo alcuni anni di fumo: aumenta il cursore.</p></div>
-        <button class="btn btn-ghost eye" type="button" aria-pressed="true">Nascondi</button>
-      </div>
-      <div class="card layer" data-layer="tumore">
+        <span class="layer-txt"><span class="card-title">Enfisema</span><span class="layer-p">Le pareti degli alveoli si rompono e formano bolle d'aria: meno superficie per scambiare ossigeno, più fiato corto.</span><span class="soglia" hidden>Compare dopo alcuni anni di fumo: aumenta il cursore.</span></span>
+        <span class="switch" aria-hidden="true"><i></i></span>
+      </button>
+      <button type="button" class="card layer" data-layer="tumore" role="switch" aria-checked="true">
         <span class="dot" style="background:#d8c29a"></span>
-        <div><div class="card-title">Tumore polmonare</div><p>Le sostanze cancerogene danneggiano il DNA delle cellule. Il rischio cresce con gli anni e con il numero di sigarette.</p><p class="soglia" hidden>Nel modello compare da 20 anni di fumo (esempio illustrativo).</p></div>
-        <button class="btn btn-ghost eye" type="button" aria-pressed="true">Nascondi</button>
-      </div>
-      <div class="card layer" id="bronchite">
+        <span class="layer-txt"><span class="card-title">Tumore polmonare</span><span class="layer-p">Le sostanze cancerogene danneggiano il DNA delle cellule. Il rischio cresce con gli anni e con il numero di sigarette.</span><span class="soglia" hidden>Nel modello compare da 20 anni di fumo (esempio illustrativo).</span></span>
+        <span class="switch" aria-hidden="true"><i></i></span>
+      </button>
+      <button type="button" class="card layer" id="bronchite" role="switch" aria-checked="false">
         <span class="dot" style="background:#b8524a"></span>
-        <div><div class="card-title">Bronchite cronica</div><p>I bronchi si infiammano, si ispessiscono e producono muco: tosse persistente. Guardali con la vista interna.</p></div>
-        <span></span>
-      </div>
+        <span class="layer-txt"><span class="card-title">Bronchite cronica</span><span class="layer-p">I bronchi si infiammano, si ispessiscono e producono muco: tosse persistente. Tocca per guardarli dall’interno.</span></span>
+        <span class="switch" aria-hidden="true"><i></i></span>
+      </button>
     </div>
 
-    <div class="row">
-      <button class="btn btn-primary" type="button" id="xray" aria-pressed="false">Vista interna: bronchi</button>
-      <button class="btn btn-secondary" type="button" id="breath">Ferma respiro</button>
-      <button class="btn btn-secondary" type="button" id="spin">Ferma rotazione</button>
-    </div>
     <p class="hint">Trascina per ruotare · rotella o due dita per lo zoom. Il modello è una rappresentazione didattica semplificata.</p>
   </aside>
 </section>
@@ -132,6 +142,11 @@
     <span class="kicker">01 · Cosa respiri</span>
     <h2 id="h-sostanze">Dentro una boccata di fumo</h2>
     <p>Ogni carta è una sostanza presente nel fumo di sigaretta. Prova a indovinare <em>dove altro la trovi</em>, poi girala.</p>
+  </div>
+  <div class="toolbar-row">
+    <span class="counter" id="sost-count">Scoperte: 0 / 10</span>
+    <button class="btn btn-secondary" type="button" id="flip-all">Gira tutte</button>
+    <button class="btn btn-secondary" type="button" id="flip-reset">Rimetti coperte</button>
   </div>
   <div class="flip-grid" id="sostanze-grid"></div>
 </section>
@@ -175,6 +190,9 @@
     <div class="card sport-ctrl">
       <label for="cig" class="card-title">Sigarette al giorno: <output id="cig-val">10</output></label>
       <input type="range" id="cig" min="0" max="30" value="10" class="range">
+      <div class="chips" id="cig-chips" role="group" aria-label="Esempi rapidi">
+        <button type="button" data-v="0">Non fumatore</button><button type="button" data-v="5">5</button><button type="button" data-v="10">10</button><button type="button" data-v="20">20 (1 pacchetto)</button><button type="button" data-v="30">30</button>
+      </div>
       <div class="hb-legend">
         <span><i class="sw sw-o2"></i>Emoglobina con O₂</span>
         <span><i class="sw sw-co"></i>Bloccata dal CO</span>
@@ -201,10 +219,10 @@
   </div>
   <div class="calc">
     <form class="card calc-in" id="calc-form" onsubmit="return false">
-      <div class="field"><label for="c-cig">Sigarette al giorno</label><input class="input" id="c-cig" type="number" min="1" max="60" value="10" inputmode="numeric"></div>
-      <div class="field"><label for="c-anni">Per quanti anni</label><input class="input" id="c-anni" type="number" min="1" max="70" value="20" inputmode="numeric"></div>
-      <div class="field"><label for="c-prezzo">Prezzo del pacchetto da 20 (€)</label><input class="input" id="c-prezzo" type="number" min="1" max="20" step="0.1" value="5.8" inputmode="decimal"></div>
-      <p class="muted small">Nel 2026 un pacchetto in Italia costa circa 5,20–6,80 €.</p>
+      <div class="slider-field"><div class="sf-head"><label for="c-cig">Sigarette al giorno</label><output id="c-cig-v">10</output></div><input class="range" id="c-cig" type="range" min="1" max="40" value="10"></div>
+      <div class="slider-field"><div class="sf-head"><label for="c-anni">Per quanti anni</label><output id="c-anni-v">20</output></div><input class="range" id="c-anni" type="range" min="1" max="60" value="20"></div>
+      <div class="slider-field"><div class="sf-head"><label for="c-prezzo">Prezzo del pacchetto</label><output id="c-prezzo-v">5,80 €</output></div><input class="range" id="c-prezzo" type="range" min="5" max="7.5" step="0.1" value="5.8"></div>
+      <p class="muted small">Nel 2026 un pacchetto da 20 in Italia costa circa 5,20–6,80 €.</p>
     </form>
     <div class="calc-out">
       <div class="res"><span class="res-n" id="r-soldi">–</span><span class="res-l">spesi in sigarette</span></div>
@@ -225,7 +243,12 @@
     <p>Il corpo inizia a ripararsi dopo pochi minuti. Scorri la linea del tempo.</p>
   </div>
   <div class="timeline">
-    <input type="range" id="tl" min="0" max="7" value="0" class="range" aria-label="Tempo dall'ultima sigaretta">
+    <div class="tl-ctrl">
+      <button class="btn btn-secondary" type="button" id="tl-prev" aria-label="Tappa precedente">‹</button>
+      <input type="range" id="tl" min="0" max="7" value="0" class="range" aria-label="Tempo dall'ultima sigaretta">
+      <button class="btn btn-secondary" type="button" id="tl-next" aria-label="Tappa successiva">›</button>
+      <button class="btn btn-primary" type="button" id="tl-play">▶ Riproduci</button>
+    </div>
     <ol class="tl-steps" id="tl-steps"></ol>
     <div class="card tl-card" aria-live="polite">
       <span class="card-kicker" id="tl-k"></span>
@@ -242,6 +265,7 @@
     <h2 id="h-miti">Falsi miti sul fumo</h2>
     <p>Leggi la frase, decidi se è vera o falsa, poi scopri la risposta.</p>
   </div>
+  <div class="toolbar-row"><span class="counter" id="myth-count">Risposte esatte: 0 / 8</span><button class="btn btn-secondary" type="button" id="myth-reset">Ricomincia</button></div>
   <div class="myths" id="myths"></div>
 </section>
 
@@ -250,7 +274,7 @@
   <div class="sec-head">
     <span class="kicker">07 · Mettiti alla prova</span>
     <h2 id="h-quiz">Quiz finale</h2>
-    <p>8 domande su tutto quello che hai esplorato. Quante ne indovini?</p>
+    <p>8 domande su tutto quello che hai esplorato. Puoi rispondere anche con i tasti <kbd>1</kbd>–<kbd>4</kbd> e andare avanti con <kbd>Invio</kbd>.</p>
   </div>
   <div class="card quiz" id="quiz-box"></div>
 </section>

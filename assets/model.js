@@ -243,31 +243,52 @@ function apply(){
     const k=el.dataset.layer;if(!(k in on))return;
     el.classList.toggle('disabled',!avail[k]);
     el.classList.toggle('off',avail[k]&&!on[k]);
-    const b=el.querySelector('.eye');b.textContent=on[k]?'Nascondi':'Mostra';b.setAttribute('aria-pressed',String(on[k]));
+    el.setAttribute('aria-checked',String(avail[k]&&on[k]));
+    el.setAttribute('aria-disabled',String(!avail[k]));
     const lab=el.querySelector('.soglia');
     if(lab) lab.hidden=avail[k];
   });
-  $('#bronchite').classList.toggle('disabled',years<3);
+  $('#bronchite').setAttribute('aria-checked',String(xray));
   stage.setAttribute('name',years===0?'polmoni_sani':'polmoni_fumatore');
-  $('#xray').textContent=xray?'Vista esterna':'Vista interna: bronchi';
   $('#xray').setAttribute('aria-pressed',String(xray));
 }
 yearsIn.addEventListener('input',()=>{years=+yearsIn.value;apply()});
 document.querySelectorAll('input[name=preset]').forEach(r=>r.addEventListener('change',e=>{years=+e.target.value;yearsIn.value=years;apply()}));
-document.querySelectorAll('.layer .eye').forEach(b=>b.addEventListener('click',()=>{const k=b.closest('.layer').dataset.layer;on[k]=!on[k];apply()}));
+document.querySelectorAll('.layer[data-layer]').forEach(b=>b.addEventListener('click',()=>{if(b.getAttribute('aria-disabled')==='true')return;const k=b.dataset.layer;on[k]=!on[k];apply()}));
 $('#xray').addEventListener('click',()=>{xray=!xray;apply()});
+$('#bronchite').addEventListener('click',()=>{xray=!xray;apply()});
+document.querySelectorAll('.step[data-target="anni"]').forEach(b=>b.addEventListener('click',()=>{years=Math.min(40,Math.max(0,years+(+b.dataset.d)));yearsIn.value=years;apply()}));
+
+// viste e zoom della camera
+const cam=stage._camera, ctl=stage._controls;
+function stopSpin(){stage.removeAttribute('autorotate');if(ctl)ctl.autoRotate=false;spin.setAttribute('aria-pressed','false')}
+function view(dir){
+  if(!cam||!ctl)return; stopSpin();
+  const d=cam.position.distanceTo(ctl.target);
+  const to=ctl.target.clone().add(new THREE.Vector3(...dir).normalize().multiplyScalar(d));
+  const from=cam.position.clone(), t0=performance.now();
+  (function anim(t){const k=Math.min(1,(t-t0)/600), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    cam.position.lerpVectors(from,to,e);
+    cam.position.sub(ctl.target).setLength(d).add(ctl.target);
+    if(k<1)requestAnimationFrame(anim)})(t0);
+}
+function zoom(f){ if(!cam||!ctl)return; const v=cam.position.clone().sub(ctl.target); const L=Math.min(Math.max(v.length()*f,0.12),1.2); cam.position.copy(ctl.target).add(v.setLength(L)); }
+$('#view-front').addEventListener('click',()=>view([0,0.08,1]));
+$('#view-side').addEventListener('click',()=>view([1,0.08,0]));
+$('#zoom-in').addEventListener('click',()=>zoom(0.8));
+$('#zoom-out').addEventListener('click',()=>zoom(1.25));
 const spin=$('#spin');
 spin.addEventListener('click',()=>{const a=stage.hasAttribute('autorotate');stage.toggleAttribute('autorotate',!a);
   // OrbitControls legge l'attributo solo all'avvio: aggiorniamo direttamente
   if(stage._controls) stage._controls.autoRotate=!a;
-  spin.textContent=a?'Avvia rotazione':'Ferma rotazione'});
-stage._controls?.addEventListener('start',()=>{stage.removeAttribute('autorotate');spin.textContent='Avvia rotazione'});
+  spin.setAttribute('aria-pressed',String(!a))});
+stage._controls?.addEventListener('start',()=>{stage.removeAttribute('autorotate');spin.setAttribute('aria-pressed','false')});
 const breathBtn=$('#breath');
-breathBtn.addEventListener('click',()=>{breathing=!breathing;breathBtn.textContent=breathing?'Ferma respiro':'Fai respirare';if(!breathing)parenchima.scale.set(1,1,1)});
+breathBtn.addEventListener('click',()=>{breathing=!breathing;breathBtn.setAttribute('aria-pressed',String(breathing));if(!breathing)parenchima.scale.set(1,1,1)});
 
 // respiro: il polmone sano si espande di più e più lentamente
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(reduceMotion){breathing=false;breathBtn.textContent='Fai respirare'}
+if(reduceMotion){breathing=false;breathBtn.setAttribute('aria-pressed','false')}
 let ph=0,last=performance.now();
 (function loop(now){
   const dt=(now-last)/1000;last=now;
