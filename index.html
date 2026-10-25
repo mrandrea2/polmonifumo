@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fumo e polmoni · Web app didattica del prof. Andrea Bertelli</title>
+<meta name="description" content="Web app interattiva per capire i danni del fumo di sigaretta: modello 3D dei polmoni, sostanze tossiche, effetti sul corpo e sullo sport, calcolatore, benefici dello smettere e quiz. A cura del prof. Andrea Bertelli.">
+<meta name="author" content="prof. Andrea Bertelli">
+<meta name="theme-color" content="#f5ead8">
+<meta property="og:title" content="Fumo e polmoni — web app didattica">
+<meta property="og:description" content="Esplora in 3D cosa fa il fumo ai polmoni e al corpo. A cura del prof. Andrea Bertelli.">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+    "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+    "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+  },
+  "integrity": {
+    "https://unpkg.com/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
+    "https://unpkg.com/three@0.184.0/build/three.core.js": "sha384-dw2ooPewaEIrAgl6oFDBmmBWCE9oW9LxRGcfwZ0hLvEprzo202wXl7vCYHRlSnOT",
+    "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js": "sha384-4rziNxOBZKQ69i+w+f89KJ55TCYquwchVbByQwmaOeIOXdOU2PLDn3kOfXHwIJC9",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js": "sha384-nbwtoZENJD3Vq+ACK0CuGQdPMuDWHkamC2KJD70EV5nfg6jQjfppKOea07YJN+N3",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js": "sha384-VofkvpG6HERhFCYbsUOHeNXBCqID2nfqkQqnVzE1jc/oPcz+qJ13ADdXH08hE+cQ"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/organic.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<a class="skip" href="#modello">Vai al contenuto</a>
+
+<header class="topbar">
+  <nav class="nav wrap" aria-label="Sezioni">
+    <a class="nav-brand" href="#top" id="top-link"><span class="brand-dot" aria-hidden="true"></span>Fumo&nbsp;&amp;&nbsp;Polmoni</a>
+    <div class="nav-links" id="nav-links">
+      <a href="#modello">Modello 3D</a>
+      <a href="#sostanze">Cosa respiri</a>
+      <a href="#corpo">Il corpo</a>
+      <a href="#sport">Sport</a>
+      <a href="#calcolatore">Calcolatore</a>
+      <a href="#smettere">Smettere</a>
+      <a href="#miti">Falsi miti</a>
+      <a href="#quiz">Quiz</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ───────── HERO + MODELLO 3D ───────── -->
+<section class="hero wrap" id="modello" aria-labelledby="h-modello">
+  <div class="stage-box">
+    <three-d-stage name="polmoni_fumatore" autorotate></three-d-stage>
+    <div class="stage-loading" aria-hidden="true">Caricamento del modello 3D…</div>
+  </div>
+  <aside class="panel">
+    <div class="row"><span class="tag tag-accent-2">Web app didattica</span><span class="tag tag-neutral">Educazione alla salute</span></div>
+    <h1 id="h-modello">Cosa fa il fumo ai tuoi polmoni</h1>
+    <p class="intro">Muovi il cursore degli anni di fumo e guarda il polmone cambiare: colore, catrame, enfisema, tumore. Ruotalo, ingrandiscilo, guardalo dentro.</p>
+
+    <div class="sim card">
+      <div class="sim-head">
+        <label for="anni" class="card-title">Anni di fumo</label>
+        <output id="anni-val" for="anni">30 anni</output>
+      </div>
+      <input type="range" id="anni" min="0" max="40" step="1" value="30" class="range" aria-describedby="stato-d">
+      <div class="seg" role="radiogroup" aria-label="Esempi rapidi">
+        <label class="seg-opt"><input type="radio" name="preset" value="0"> Sano</label>
+        <label class="seg-opt"><input type="radio" name="preset" value="5"> 5 anni</label>
+        <label class="seg-opt"><input type="radio" name="preset" value="15"> 15 anni</label>
+        <label class="seg-opt"><input type="radio" name="preset" value="30" checked> 30 anni</label>
+      </div>
+      <div class="stato" aria-live="polite">
+        <strong id="stato-t">Danno grave</strong>
+        <p id="stato-d"></p>
+      </div>
+    </div>
+
+    <div class="layers" id="layers">
+      <div class="card layer" data-layer="catrame">
+        <span class="dot" style="background:#2a201b"></span>
+        <div><div class="card-title">Catrame</div><p>Le particelle del fumo si depositano nel tessuto e lo anneriscono. Le ciglia che puliscono le vie aeree si paralizzano.</p></div>
+        <button class="btn btn-ghost eye" type="button" aria-pressed="true">Nascondi</button>
+      </div>
+      <div class="card layer" data-layer="enfisema">
+        <span class="dot" style="background:#efd9c6"></span>
+        <div><div class="card-title">Enfisema</div><p>Le pareti degli alveoli si rompono e formano bolle d'aria: meno superficie per scambiare ossigeno, più fiato corto.</p><p class="soglia" hidden>Compare dopo alcuni anni di fumo: aumenta il cursore.</p></div>
+        <button class="btn btn-ghost eye" type="button" aria-pressed="true">Nascondi</button>
+      </div>
+      <div class="card layer" data-layer="tumore">
+        <span class="dot" style="background:#d8c29a"></span>
+        <div><div class="card-title">Tumore polmonare</div><p>Le sostanze cancerogene danneggiano il DNA delle cellule. Il rischio cresce con gli anni e con il numero di sigarette.</p><p class="soglia" hidden>Nel modello compare da 20 anni di fumo (esempio illustrativo).</p></div>
+        <button class="btn btn-ghost eye" type="button" aria-pressed="true">Nascondi</button>
+      </div>
+      <div class="card layer" id="bronchite">
+        <span class="dot" style="background:#b8524a"></span>
+        <div><div class="card-title">Bronchite cronica</div><p>I bronchi si infiammano, si ispessiscono e producono muco: tosse persistente. Guardali con la vista interna.</p></div>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-primary" type="button" id="xray" aria-pressed="false">Vista interna: bronchi</button>
+      <button class="btn btn-secondary" type="button" id="breath">Ferma respiro</button>
+      <button class="btn btn-secondary" type="button" id="spin">Ferma rotazione</button>
+    </div>
+    <p class="hint">Trascina per ruotare · rotella o due dita per lo zoom. Il modello è una rappresentazione didattica semplificata.</p>
+  </aside>
+</section>
+
+<!-- ───────── NUMERI ITALIA ───────── -->
+<section class="wrap band" aria-labelledby="h-numeri">
+  <h2 id="h-numeri" class="sr-only">Il fumo in Italia</h2>
+  <div class="stats">
+    <div class="stat"><span class="stat-n" data-count="24">24</span><span class="stat-u">%</span><p>degli adulti italiani (18–69 anni) fuma: circa 1 su 4.</p></div>
+    <div class="stat"><span class="stat-n" data-count="93000">93.000</span><span class="stat-u">+</span><p>morti ogni anno in Italia attribuibili al tabacco.</p></div>
+    <div class="stat"><span class="stat-n" data-count="30">30</span><span class="stat-u">%</span><p>dei ragazzi di 14–17 anni usa almeno un prodotto con nicotina (sigarette, svapo, tabacco riscaldato).</p></div>
+    <div class="stat"><span class="stat-n" data-count="7000">7.000</span><span class="stat-u">+</span><p>sostanze chimiche nel fumo di una sigaretta, circa 70 cancerogene.</p></div>
+  </div>
+</section>
+
+<!-- ───────── SOSTANZE ───────── -->
+<section class="wrap sec" id="sostanze" aria-labelledby="h-sostanze">
+  <div class="sec-head">
+    <span class="kicker">01 · Cosa respiri</span>
+    <h2 id="h-sostanze">Dentro una boccata di fumo</h2>
+    <p>Ogni carta è una sostanza presente nel fumo di sigaretta. Prova a indovinare <em>dove altro la trovi</em>, poi girala.</p>
+  </div>
+  <div class="flip-grid" id="sostanze-grid"></div>
+</section>
+
+<!-- ───────── CORPO ───────── -->
+<section class="wrap sec" id="corpo" aria-labelledby="h-corpo">
+  <div class="sec-head">
+    <span class="kicker">02 · Non solo polmoni</span>
+    <h2 id="h-corpo">Il fumo colpisce tutto il corpo</h2>
+    <p>Il tabacco è collegato ad almeno 27 malattie. Tocca un punto della figura per scoprire cosa succede a ogni organo.</p>
+  </div>
+  <div class="body-wrap">
+    <div class="body-fig" id="body-fig">
+      <svg viewBox="0 0 200 440" aria-hidden="true" class="silhouette">
+        <circle cx="100" cy="44" r="30"/>
+        <rect x="88" y="70" width="24" height="20" rx="8"/>
+        <path d="M58 92 Q100 80 142 92 Q156 98 156 116 L150 232 Q148 250 132 252 L68 252 Q52 250 50 232 L44 116 Q44 98 58 92Z"/>
+        <path d="M46 104 Q30 110 28 132 L20 232 Q19 244 28 246 Q36 247 38 236 L50 140Z"/>
+        <path d="M154 104 Q170 110 172 132 L180 232 Q181 244 172 246 Q164 247 162 236 L150 140Z"/>
+        <path d="M66 248 L98 248 L96 420 Q95 432 84 432 Q73 432 72 420Z"/>
+        <path d="M102 248 L134 248 L128 420 Q127 432 116 432 Q105 432 104 420Z"/>
+      </svg>
+      <div class="hotspots" id="hotspots"></div>
+    </div>
+    <div class="organ card" id="organ" aria-live="polite">
+      <span class="card-kicker" id="organ-k">Seleziona un organo</span>
+      <h3 id="organ-t">Tocca un punto sulla figura</h3>
+      <ul id="organ-l"><li>Ogni punto pulsante corrisponde a una parte del corpo danneggiata dal fumo.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── SPORT ───────── -->
+<section class="wrap sec" id="sport" aria-labelledby="h-sport">
+  <div class="sec-head">
+    <span class="kicker">03 · Fumo e sport</span>
+    <h2 id="h-sport">Il monossido di carbonio ruba ossigeno ai muscoli</h2>
+    <p>Il CO del fumo si lega all’emoglobina circa 200–250 volte più dell’ossigeno. I globuli rossi “occupati” dal CO non portano più ossigeno ai muscoli.</p>
+  </div>
+  <div class="sport">
+    <div class="card sport-ctrl">
+      <label for="cig" class="card-title">Sigarette al giorno: <output id="cig-val">10</output></label>
+      <input type="range" id="cig" min="0" max="30" value="10" class="range">
+      <div class="hb-legend">
+        <span><i class="sw sw-o2"></i>Emoglobina con O₂</span>
+        <span><i class="sw sw-co"></i>Bloccata dal CO</span>
+      </div>
+      <p class="big"><strong id="cohb">3,5%</strong> di emoglobina bloccata <span class="muted">(stima indicativa)</span></p>
+      <p class="muted small">Nei non fumatori la carbossiemoglobina resta di solito sotto l’1–2%; nei fumatori sale spesso al 3–8% e oltre nei forti fumatori.</p>
+    </div>
+    <div class="hb-grid" id="hb-grid" role="img" aria-label="Griglia di 100 molecole di emoglobina"></div>
+    <ul class="sport-list">
+      <li><strong>Meno resistenza:</strong> meno ossigeno ai muscoli, VO₂max più basso, fatica prima.</li>
+      <li><strong>Cuore sotto sforzo:</strong> la nicotina alza frequenza cardiaca e pressione già a riposo.</li>
+      <li><strong>Fiato corto:</strong> bronchi infiammati e muco riducono il flusso d’aria.</li>
+      <li><strong>Recupero lento:</strong> meno sangue e ossigeno ai tessuti, guarigione di muscoli, tendini e ossa più lenta.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ───────── CALCOLATORE ───────── -->
+<section class="wrap sec" id="calcolatore" aria-labelledby="h-calc">
+  <div class="sec-head">
+    <span class="kicker">04 · Fai i conti</span>
+    <h2 id="h-calc">Quanto costa davvero fumare?</h2>
+    <p>Inserisci i dati di un fumatore (anche immaginario): vedrai soldi spesi, sigarette fumate e tempo di vita perso stimato.</p>
+  </div>
+  <div class="calc">
+    <form class="card calc-in" id="calc-form" onsubmit="return false">
+      <div class="field"><label for="c-cig">Sigarette al giorno</label><input class="input" id="c-cig" type="number" min="1" max="60" value="10" inputmode="numeric"></div>
+      <div class="field"><label for="c-anni">Per quanti anni</label><input class="input" id="c-anni" type="number" min="1" max="70" value="20" inputmode="numeric"></div>
+      <div class="field"><label for="c-prezzo">Prezzo del pacchetto da 20 (€)</label><input class="input" id="c-prezzo" type="number" min="1" max="20" step="0.1" value="5.8" inputmode="decimal"></div>
+      <p class="muted small">Nel 2026 un pacchetto in Italia costa circa 5,20–6,80 €.</p>
+    </form>
+    <div class="calc-out">
+      <div class="res"><span class="res-n" id="r-soldi">–</span><span class="res-l">spesi in sigarette</span></div>
+      <div class="res"><span class="res-n" id="r-tot">–</span><span class="res-l">sigarette fumate</span></div>
+      <div class="res"><span class="res-n" id="r-vita">–</span><span class="res-l">di vita persi (stima)</span></div>
+      <div class="res"><span class="res-n" id="r-anno">–</span><span class="res-l">all’anno</span></div>
+      <p class="equiv" id="r-equiv"></p>
+      <p class="muted small">Stima della vita persa: circa 20 minuti per sigaretta (University College London, 2024). È una media sulla popolazione, non una previsione individuale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── SMETTERE ───────── -->
+<section class="wrap sec" id="smettere" aria-labelledby="h-smettere">
+  <div class="sec-head">
+    <span class="kicker">05 · Smettere conviene sempre</span>
+    <h2 id="h-smettere">Cosa succede quando spegni l’ultima sigaretta</h2>
+    <p>Il corpo inizia a ripararsi dopo pochi minuti. Scorri la linea del tempo.</p>
+  </div>
+  <div class="timeline">
+    <input type="range" id="tl" min="0" max="7" value="0" class="range" aria-label="Tempo dall'ultima sigaretta">
+    <ol class="tl-steps" id="tl-steps"></ol>
+    <div class="card tl-card" aria-live="polite">
+      <span class="card-kicker" id="tl-k"></span>
+      <h3 id="tl-t"></h3>
+      <p id="tl-d"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── MITI ───────── -->
+<section class="wrap sec" id="miti" aria-labelledby="h-miti">
+  <div class="sec-head">
+    <span class="kicker">06 · Vero o falso?</span>
+    <h2 id="h-miti">Falsi miti sul fumo</h2>
+    <p>Leggi la frase, decidi se è vera o falsa, poi scopri la risposta.</p>
+  </div>
+  <div class="myths" id="myths"></div>
+</section>
+
+<!-- ───────── QUIZ ───────── -->
+<section class="wrap sec" id="quiz" aria-labelledby="h-quiz">
+  <div class="sec-head">
+    <span class="kicker">07 · Mettiti alla prova</span>
+    <h2 id="h-quiz">Quiz finale</h2>
+    <p>8 domande su tutto quello che hai esplorato. Quante ne indovini?</p>
+  </div>
+  <div class="card quiz" id="quiz-box"></div>
+</section>
+
+<!-- ───────── AIUTO ───────── -->
+<section class="wrap sec help" id="aiuto" aria-labelledby="h-aiuto">
+  <div class="help-card">
+    <h2 id="h-aiuto">Vuoi smettere o aiutare qualcuno?</h2>
+    <p>Con un aiuto professionale le probabilità di smettere aumentano molto. Puoi parlarne con il medico di famiglia, con un docente di cui ti fidi o chiamare gratuitamente:</p>
+    <div class="phones">
+      <a class="phone" href="tel:800554088"><span>Telefono Verde contro il Fumo · ISS</span><strong>800 554 088</strong></a>
+      <a class="phone" href="tel:800940789"><span>Numero unico nazionale dipendenze · ISS</span><strong>800 940 789</strong></a>
+    </div>
+    <p class="small">Servizi gratuiti e anonimi, dal lunedì al venerdì. Sul sito dell’ISS trovi anche l’elenco dei Centri antifumo della tua regione.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div>
+      <p class="foot-brand">Fumo &amp; Polmoni</p>
+      <p>Web app didattica ideata e realizzata dal <strong>prof. Andrea Bertelli</strong><br>Scienze motorie e sportive · Liceo Statale “G. Galilei”, Verona</p>
+      <p class="small muted">Strumento educativo: non sostituisce il parere del medico. Il modello 3D è una rappresentazione semplificata.</p>
+    </div>
+    <details class="sources">
+      <summary>Fonti</summary>
+      <ul>
+        <li>Istituto Superiore di Sanità — sorveglianza PASSI 2022–2023 e indagine sui giovani 2023–2024</li>
+        <li>Ministero della Salute — decessi attribuibili al tabacco in Italia</li>
+        <li>AIOM — I numeri del cancro in Italia</li>
+        <li>OMS / WHO — Tobacco fact sheet e “Health benefits of smoking cessation”</li>
+        <li>CDC — Health Effects of Cigarette Smoking; National Cancer Institute — Harmful chemicals in tobacco products</li>
+        <li>Jackson S. et al., University College London — <em>Journal of Addiction</em>, 2024 (minuti di vita persi per sigaretta)</li>
+        <li>Hackshaw A. et al. — <em>BMJ</em>, 2018 (rischio cardiovascolare anche con poche sigarette)</li>
+      </ul>
+    </details>
+  </div>
+</footer>
+
+<script src="assets/three-d-stage.js"></script>
+<script type="module" src="assets/model.js"></script>
+<script src="assets/app.js" defer></script>
+</body>
+</html>
